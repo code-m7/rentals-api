@@ -6,6 +6,12 @@ using RentalsApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// على الاستضافات السحابية (Render) يُمرَّر المنفذ عبر متغيّر البيئة PORT — نلتزم به.
+// محليًا لا يوجد PORT فيبقى المنفذ كما في launchSettings (5080).
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrWhiteSpace(port))
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 // ===== الخدمات =====
 // إذا وُجد رابط Postgres (على السحابة عبر متغيّر البيئة DATABASE_URL) نستخدمه،
 // وإلا نستخدم SQLite محليًا. هكذا نفس الكود يعمل محليًا وعلى Render/Neon.
