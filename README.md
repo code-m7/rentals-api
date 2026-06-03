@@ -3,61 +3,34 @@
 واجهة برمجية بسيطة (ASP.NET Core 9 + SQLite + Swagger) لإدارة إعلانات الإيجار.
 التطبيق المحمول (HelloMaui / my-app) يقرأ منها قائمة الإعلانات ويظهرها كنقاط حمراء على الخريطة.
 
-## ✅ التشغيل المحلي
+> 🐧 **هذه النسخة مُهيّأة للتشغيل الذاتي على Ubuntu Server (داخل VirtualBox).**
+> أُزيلت كل ارتباطات الخدمات السحابية القديمة (Render للاستضافة، Neon للـ Postgres).
+> قاعدة البيانات الآن **SQLite** (ملف `rentals.db`) وتبقى دائمة على قرص السيرفر.
+
+## ✅ التشغيل المحلي (للتطوير على ويندوز)
 
 ```powershell
-cd C:\Users\s\Desktop\RentalsApi
+cd C:\Users\s\Desktop\test\RentalsApi
 dotnet run
 ```
 
-يفتح المتصفح تلقائيًا على: **http://localhost:5080/swagger**
-
-من Swagger UI:
-- `GET /listings` → اعرض جميع الإعلانات
-- `POST /listings` → اضغط "Try it out" ثم عبّئ النموذج وانقر "Execute"
-- `PUT /listings/{id}` → عدّل إعلانًا موجودًا
-- `DELETE /listings/{id}` → احذف إعلانًا
+يستمع السيرفر على: **http://localhost:5080**
+- `/manage` ← صفحة الإدارة العربية (إضافة/تعديل/حذف + الإحداثيات)
+- `/swagger` ← واجهة Swagger
+- `/listings` ← JSON بكل الإعلانات (التطبيق المحمول يقرأ من هنا)
 
 > القاعدة (SQLite) تُحفظ في الملف `rentals.db` بنفس المجلد.
 
-## 🧪 اختبار سريع بالمتصفح
+## 🐧 النشر على Ubuntu Server (VirtualBox)
 
-افتح: http://localhost:5080/listings → ترى مصفوفة JSON بالإعلانات.
+راجع الدليل التفصيلي خطوة بخطوة: **[UBUNTU_SERVER_SETUP.md](UBUNTU_SERVER_SETUP.md)**
 
-## 🚀 نشر مجاني على Render.com (بدون بطاقة ائتمانية)
-
-1. أنشئ حسابًا على https://render.com (مجاني، يكفي إيميل).
-2. ارفع مجلد `RentalsApi` كاملًا إلى مستودع GitHub خاص أو عام.
-3. في لوحة Render:
-   - **New +** → **Web Service**
-   - اختر المستودع.
-   - **Runtime**: Docker
-   - **Region**: Frankfurt (أقرب لدبي)
-   - **Plan**: Free
-   - اضغط **Create Web Service**
-4. بعد ~5 دقائق سيُعطيك Render رابطًا مثل:
-   ```
-   https://your-api.onrender.com
-   ```
-5. افتح: `https://your-api.onrender.com/swagger` ← لوحة Swagger جاهزة.
-
-## 🔗 ربط التطبيق المحمول بالـ API
-
-في `C:\Users\s\Desktop\my-app\Services\ListingService.cs`، غيّر:
-
-```csharp
-public const string RemoteUrl =
-    "https://your-api.onrender.com/listings";
-```
-
-أعد بناء التطبيق:
-```powershell
-cd C:\Users\s\Desktop\my-app
-dotnet build HelloMaui.csproj -f net9.0-android
-```
-
-كل إعلان تضيفه من Swagger مع `Latitude` و `Longitude` سيظهر فورًا في تبويب
-"الخريطة" داخل التطبيق كنقطة حمراء.
+باختصار:
+1. ثبّت Ubuntu Server داخل VirtualBox بمحوّل شبكة **Bridged**.
+2. ثبّت .NET 9 SDK على السيرفر.
+3. انسخ المشروع وشغّله كخدمة `systemd` دائمة.
+4. افتح المنفذ 5080 في الجدار الناري (`ufw`).
+5. وجّه `RemoteUrl` في التطبيق المحمول إلى `http://<عنوان-الـVM>:5080/listings`.
 
 ## 📍 طريقة الحصول على إحداثيات أي بناية
 
@@ -66,12 +39,6 @@ dotnet build HelloMaui.csproj -f net9.0-android
 3. ستظهر إحداثيات مثل: `24.4764, 54.3705`
    - الرقم الأول = `Latitude`
    - الرقم الثاني = `Longitude`
-4. ضعها في Swagger عند إنشاء الإعلان.
+4. ضعها في صفحة `/manage` عند إنشاء/تعديل الإعلان.
 
-## ⚠️ ملاحظات
-
-- خطة Render المجانية "تنام" بعد 15 دقيقة من عدم الاستخدام، فيستغرق الطلب الأول
-  بعد النوم ~30 ثانية. التطبيق يعرض النسخة المحفوظة محليًا أثناء ذلك.
-- ملف SQLite على Render الخطة المجانية **مؤقت** (يُمسح عند إعادة النشر).
-  للحفاظ على البيانات بشكل دائم: استخدم Postgres المجاني من Render، أو ارفع
-  النسخة الاحتياطية يدويًا.
+> ⚠️ الخريطة في التطبيق مقيّدة بحدود الإمارات (Latitude بين 22.5 و 26.5، Longitude بين 51.5 و 56.5).
